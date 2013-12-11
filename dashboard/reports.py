@@ -7,6 +7,7 @@ import tsumanga
 from tsumanga.webservice import WebServiceHandler
 
 import dashboard
+from dashboard import version
 
 class Version(WebServiceHandler):
     _versions = dict(version=dashboard.version, infrastructure=tsumanga.version)
