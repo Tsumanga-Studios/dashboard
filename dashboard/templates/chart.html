@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <script src="https://www.google.com/jsapi"></script>
+  <script>
+    google.load('visualization', '1.0', {'packages':['corechart']});
+    google.setOnLoadCallback(pageStart);
+    {% block pageStartJS %}
+      function pageStart()
+      {
+        data = getData();
+        google.visualization.drawChart(
+          {chartType:"{{chartType}}",
+           containerId:"chart_div",
+           dataTable:data});
+      }
+    {% end %}
+  </script>
+
+  {% block getDataScript %}
+  <script>
+    function getData()
+    {
+      return [['App', 'Awesomeness'],['Sirenix Power', 10], ['Sing it Laurie', 4], ['Fairy School', 20]];
+    }
+  </script>
+  {% end %}
+</head>
+
+<body>
+{% block chartDiv %}
+  <div id="chart_div"></div>
+{% end %}
+</body>
+</html>
