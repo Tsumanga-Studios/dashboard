@@ -85,7 +85,7 @@ def async_request(path, callback=None, cache_time=3600, **query):
         
     def get_data():
         """ get data from web service """
-        req = httpclient.AsyncHttpRequest(
+        req = httpclient.HTTPRequest(
             url,
             headers=dict(Authorization="Basic " + DISTIMO_KEYS[3]),
             method="GET",
