@@ -20,7 +20,6 @@ if __name__ == '__main__':
                                    "static/img/*",
                                    "static/js/*",
                                    "static/css/*"]},
-        package_data={},
         install_requires=[],
         requires=[],
     )
