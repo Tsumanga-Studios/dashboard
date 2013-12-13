@@ -8,6 +8,7 @@ from tsumanga.webservice import WebServiceHandler
 
 import dashboard
 from dashboard import version
+from dashboard import distimo
 
 class Version(WebServiceHandler):
     _versions = dict(version=dashboard.version, infrastructure=tsumanga.version)
@@ -20,4 +21,4 @@ class Version(WebServiceHandler):
 def urls():
     return [
         (r"/app/dash/version", Version),
-        ]
+        ] + distimo.urls()
