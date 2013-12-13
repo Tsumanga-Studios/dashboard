@@ -132,7 +132,7 @@ class ApplicationIDReport(WebServiceHandler):
         apps = defaultdict(list)
         if data_array:
             for row in data_array[1:]:
-                appname = row[1]
+                appname = row[1].strip('"')
                 if appname.startswith("Winx Sirenix Power"):
                     appname = "Winx Sirenix Power" # samsung store messes up name
                 apps[appname].append(row[0])
