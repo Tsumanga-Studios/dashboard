@@ -116,6 +116,21 @@ def sync_request(path, **query):
             array = [line.split(";") for line in data.split("\n") if line]
     return array
 
+def app_id_dicts_from_arrays(data_array):
+    """ process rows of filters/assets/reviews
+    returns {app_name:[app_id]}, {app_id:app_name} """
+    app_to_id = defaultdict(list)
+    id_to_app = {}
+    if data_array:
+        for row in data_array[1:]:
+            appname = row[1].strip('"')
+            if "(" in appname:
+                before, paren, after = appname.partition("(")
+                appname = before.strip()
+            app_to_id[appname].append(row[0])
+            id_to_app[row[0]] = appname
+    return app_to_id, id_to_app
+
 class ApplicationIDReport(WebServiceHandler):
     """
     Report that gets Application IDs from Distimo,
@@ -129,16 +144,40 @@ class ApplicationIDReport(WebServiceHandler):
         async_request("filters/assets/reviews", callback=self.got_asset_ids)
 
     def got_asset_ids(self, data_array):
-        apps = defaultdict(list)
+        app_to_id, _ = app_id_dicts_from_arrays(data_array)
+        self.json_response(app_to_id)
+
+class DownloadsReport(WebServiceHandler):
+    """
+    Report that gets total downloads from Distimo,
+    aggregating same app over all app stores.
+
+    JSON response
+    {app_name:total_downloads}
+    """
+    @web.asynchronous
+    def get(self):
+        async_request("filters/assets/reviews", callback=self.got_asset_ids)
+
+    def got_asset_ids(self, data_array):
+        _, self.id_to_app = app_id_dicts_from_arrays(data_array)
+        async_request("downloads", callback=self.got_downloads,
+                      breakdown="application",
+                      **{"from":"all"}) # from is a reserved word
+
+    def got_downloads(self, data_array):
+        """ construct response """
+        rsp = {}
         if data_array:
+            row0 = data_array[0]
+            appcol = row0.index("Application")
+            valcol = row0.index("Value")
             for row in data_array[1:]:
-                appname = row[1].strip('"')
-                if appname.startswith("Winx Sirenix Power"):
-                    appname = "Winx Sirenix Power" # samsung store messes up name
-                apps[appname].append(row[0])
-        self.json_response(apps)
+                rsp[row[appcol]] = row[valcol]
+        self.json_response(rsp)
 
 def urls():
     return [
-        (r'/app/dash/appids', ApplicationIDReport)
+        (r'/app/dash/appids', ApplicationIDReport),
+        (r'/app/dash/downloads', DownloadsReport),
         ]
