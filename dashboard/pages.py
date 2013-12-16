@@ -14,8 +14,14 @@ class DummyPage(web.RequestHandler):
     def get(self, chartType):
         self.render("chart.html", chartType=chartType)
 
+class DownloadsPage(web.RequestHandler):
+    def get(self):
+        chartType = self.get_argument("view", "BarChart")
+        self.render("downloads.html", chartType = chartType)
+
 def urls():
     return [
         (r"/dashboard/version", VersionPage),
         (r"/dashboard/dummy/([a-zA-Z]+)", DummyPage),
+        (r"/dashboard/downloads", DownloadsPage),
         ]

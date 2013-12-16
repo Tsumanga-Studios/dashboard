@@ -154,11 +154,11 @@ class DownloadsReport(WebServiceHandler):
     aggregating same app over all app stores.
 
     JSON response
-    {app_name:total_downloads}
+    {array:[["Application","Downloads"],[data]...]}
     """
     @web.asynchronous
     def get(self):
-        async_request("filters/assets/reviews", callback=self.got_asset_ids)
+        async_request("filters/assets/downloads", callback=self.got_asset_ids)
 
     def got_asset_ids(self, data_array):
         _, self.id_to_app = app_id_dicts_from_arrays(data_array)
@@ -168,7 +168,7 @@ class DownloadsReport(WebServiceHandler):
 
     def got_downloads(self, data_array):
         """ construct response """
-        rsp = defaultdict(int)
+        totals = defaultdict(int)
         if data_array:
             row0 = data_array[0]
             try:
@@ -176,10 +176,13 @@ class DownloadsReport(WebServiceHandler):
                 valcol = row0.index("Value")
                 for row in data_array[1:]:
                     appname = self.id_to_app.get(row[appcol], "Unknown")
-                    rsp[appname] += int(row[valcol])
+                    totals[appname] += int(row[valcol])
             except ValueError:
                 logging.error("Distimo API changed? downloads headings: {0}".format(row0))
-        self.json_response(rsp)
+        out = [["Application", "Downloads"]]
+        for app, downloads in totals.items():
+            out.append([app, downloads])
+        self.json_response(dict(array=out))
 
 def urls():
     return [

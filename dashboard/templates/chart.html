@@ -2,29 +2,32 @@
 <html>
 <head>
   <script src="https://www.google.com/jsapi"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
   <script>
     google.load('visualization', '1.0', {'packages':['corechart']});
     google.setOnLoadCallback(pageStart);
     {% block pageStartJS %}
       function pageStart()
       {
-        data = getData();
+        getDataAsync(drawChartAsync);
+      }
+    {% end %}
+    {% block drawChartAsyncJS %}
+      function drawChartAsync(data)
+      {
         google.visualization.drawChart(
           {chartType:"{{chartType}}",
            containerId:"chart_div",
            dataTable:data});
       }
     {% end %}
+    {% block getDataJS %}
+      function getDataAsync(callback)
+      {
+        callback([['App', 'Awesomeness'],['Sirenix Power', 10], ['Sing it Laurie', 4], ['Fairy School', 20]]);
+      }
+    {% end %}
   </script>
-
-  {% block getDataScript %}
-  <script>
-    function getData()
-    {
-      return [['App', 'Awesomeness'],['Sirenix Power', 10], ['Sing it Laurie', 4], ['Fairy School', 20]];
-    }
-  </script>
-  {% end %}
   {% block pageStyle %}
   <style>
    #chart_div { width:40em; height: 40em; border: 1px solid brown; }
@@ -33,8 +36,10 @@
 </head>
 
 <body>
+{% block pageHeading %}{% end %}
 {% block chartDiv %}
   <div id="chart_div"></div>
 {% end %}
+{% block pageFooter %}{% end %}
 </body>
 </html>

@@ -1,0 +1,12 @@
+{% extends "chart.html" %}
+
+{% block getDataJS %}
+    function getDataAsync(callback)
+    {
+      $.getJSON("/app/dash/downloads", null, function(data, textstatus, xhr) { callback(data.array); });
+    }
+{% end %}
+
+{% block  pageHeading %}
+<h1>Downloads</h1>
+{% end %}
