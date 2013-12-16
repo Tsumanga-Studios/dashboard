@@ -73,7 +73,7 @@ def async_request(path, callback=None, cache_time=3600, **query):
         """ parse data and pass it back to the callback """
         array = []
         if data:
-            array = list(csv.reader(data.split('\n')))
+            array = list(csv.reader(line for line in data.split('\n') if line.strip()))
         if callback:
             callback(array)
             
@@ -114,7 +114,7 @@ def sync_request(path, **query):
     with urlopen(req) as rsp:
         data = rsp.read().decode('utf-8')
         if data:
-            array = [line.split(";") for line in data.split("\n") if line]
+            array = list(csv.reader(line for line in data.split("\n") if line.strip()))
     return array
 
 def app_id_dicts_from_arrays(data_array):
@@ -168,14 +168,15 @@ class DownloadsReport(WebServiceHandler):
 
     def got_downloads(self, data_array):
         """ construct response """
-        rsp = {}
+        rsp = defaultdict(int)
         if data_array:
             row0 = data_array[0]
             try:
                 appcol = row0.index("Application")
                 valcol = row0.index("Value")
                 for row in data_array[1:]:
-                    rsp[row[appcol]] = int(row[valcol])
+                    appname = self.id_to_app.get(row[appcol], "Unknown")
+                    rsp[appname] += int(row[valcol])
             except ValueError:
                 logging.error("Distimo API changed? downloads headings: {0}".format(row0))
         self.json_response(rsp)
