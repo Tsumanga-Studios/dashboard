@@ -5,6 +5,7 @@
 import logging
 import hmac
 import hashlib
+import csv
 from datetime import datetime
 from collections import defaultdict
 
@@ -51,7 +52,7 @@ def distimo_url(path, query):
         init()
     private, public, user, base64auth = DISTIMO_KEYS
     if "format" not in query:
-        query["format"] = "scsv" # semicolon-separated values
+        query["format"] = "csv"
     query_string = make_query_string(query)
     query_time = int(utc_time())
     query_hash = hmac.new(private.encode('ascii'), 
@@ -72,7 +73,7 @@ def async_request(path, callback=None, cache_time=3600, **query):
         """ parse data and pass it back to the callback """
         array = []
         if data:
-            array = [line.split(";") for line in data.split("\n") if line]
+            array = list(csv.reader(data.split('\n')))
         if callback:
             callback(array)
             
@@ -170,10 +171,13 @@ class DownloadsReport(WebServiceHandler):
         rsp = {}
         if data_array:
             row0 = data_array[0]
-            appcol = row0.index("Application")
-            valcol = row0.index("Value")
-            for row in data_array[1:]:
-                rsp[row[appcol]] = row[valcol]
+            try:
+                appcol = row0.index("Application")
+                valcol = row0.index("Value")
+                for row in data_array[1:]:
+                    rsp[row[appcol]] = int(row[valcol])
+            except ValueError:
+                logging.error("Distimo API changed? downloads headings: {0}".format(row0))
         self.json_response(rsp)
 
 def urls():
