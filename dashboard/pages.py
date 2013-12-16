@@ -45,7 +45,7 @@ class TsumangaOnly(auth.GoogleMixin):
 
 class DownloadsPage(HereTemp, TsumangaOnly, web.RequestHandler):
     def authorised_get(self, name):
-        chartType = self.get_argument("view", "BarChart")
+        chartType = self.get_argument("view", "Table")
         self.render("downloads.html", chartType = chartType)
 
 
