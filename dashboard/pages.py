@@ -43,7 +43,7 @@ class TsumangaOnly(auth.GoogleMixin):
         self.set_secure_cookie('tsumanga-user', name)
         self.authorised_get(name)
 
-class DownloadsPage(web.RequestHandler, HereTemp, TsumangaOnly):
+class DownloadsPage(HereTemp, TsumangaOnly, web.RequestHandler):
     def authorised_get(self):
         chartType = self.get_argument("view", "BarChart")
         self.render("downloads.html", chartType = chartType)
