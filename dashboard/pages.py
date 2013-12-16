@@ -2,7 +2,10 @@
   Simple pages of the Dashboard
 """
 
-from tornado import web
+import os
+
+from tornado import web, auth
+from tornado.options import options
 
 import dashboard
 
@@ -14,10 +17,37 @@ class DummyPage(web.RequestHandler):
     def get(self, chartType):
         self.render("chart.html", chartType=chartType)
 
-class DownloadsPage(web.RequestHandler):
+class HereTemp:
+    def get_template_path(self):
+        here = os.path.split(__file__)[0]
+        return os.path.join(here, "templates")
+
+class TsumangaOnly(auth.GoogleMixin):
+    @web.asynchronous
     def get(self):
+        name = self.get_secure_cookie('tsumanga-user')
+        if name is not None:
+            return self.authorised_get(name.decode('utf-8'))
+        if self.get_argument("openid.mode", None):
+           self.get_authenticated_user(self.async_callback(self._on_auth))
+           return
+        self.authenticate_redirect()
+
+    def _on_auth(self, user):
+        if not user:
+            raise web.HTTPError(599)
+        email = user.get("email","")
+        if not email.endswith("@tsumanga.com"):
+            raise web.HTTPError(403)
+        name = user["name"]
+        self.set_secure_cookie('tsumanga-user', name)
+        self.authorised_get(name)
+
+class DownloadsPage(web.RequestHandler, HereTemp, TsumangaOnly):
+    def authorised_get(self):
         chartType = self.get_argument("view", "BarChart")
         self.render("downloads.html", chartType = chartType)
+
 
 def urls():
     return [
